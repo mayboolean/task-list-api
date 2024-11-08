@@ -36,8 +36,9 @@ def delete_one_goal(goal_id):
     db.session.delete(goal)
     db.session.commit()
     
-    response = {"details": f"Goal {goal.id} \"{goal.title}\" successfully deleted "}
+    response = {"details": f"Goal {goal.id} \"{goal.title}\" successfully deleted"}
     return response, 200
+
 
 
 def validate_goal(goal_id):
