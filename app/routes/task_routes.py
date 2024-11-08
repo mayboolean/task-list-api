@@ -10,16 +10,8 @@ tasks_bp = Blueprint("tasks_bp", __name__, url_prefix="/tasks")
 @tasks_bp.post("")
 def create_task():
     request_body = request.get_json()
-
-    title = request_body.get("title", None)
-    description = request_body.get("description", None)
-    completed_at = request_body.get("completed_at", None)
-
-    if not title or not description:
-        response = {"details": f"Invalid data"}
-        abort(make_response(response, 400))
-
-    new_task = Task(title=title, description=description, completed_at=completed_at)
+    new_task = Task.obj_from_dict(request_body)
+    
     db.session.add(new_task)
     db.session.commit()
  

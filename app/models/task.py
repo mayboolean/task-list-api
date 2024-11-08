@@ -2,6 +2,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from ..db import db
 from datetime import datetime
 from typing import Optional
+from flask import make_response, abort
 
 class Task(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -22,10 +23,16 @@ class Task(db.Model):
     @classmethod
     # create instance from request body
     def obj_from_dict(cls, task_data):
-        
+        title = task_data.get("title", None)
+        description = task_data.get("description", None)
+
+        if not title or not description:
+            response = {"details": "Invalid data"}
+            abort(make_response(response, 400))
+
         new_task = cls(
-            title=task_data["title"],
-            description=task_data["description"],
+            title=title,
+            description=description,
             completed_at=task_data.get("completed_at", None)
         )
 
