@@ -41,7 +41,7 @@ def get_all_task():
 def get_one_task(task_id):
     task = validate_task(task_id)
 
-    return {"task": task.obj_to_dict()}
+    return {"task": task.obj_to_dict()}, 200
 
 @bp.put("/<task_id>")
 def update_task(task_id):

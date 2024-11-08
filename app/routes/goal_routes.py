@@ -1,4 +1,4 @@
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, request, abort, make_response
 from ..models.goal import Goal
 from ..db import db
 
@@ -22,3 +22,25 @@ def get_all_goals():
     goals_response = [goal.obj_to_dict() for goal in goals]
     return goals_response
 
+@bp.get("/<goal_id>")
+def get_one_goal(goal_id):
+    goal = validate_goal(goal_id)
+
+    return {"goal": goal.obj_to_dict()}, 200
+
+
+def validate_goal(goal_id):
+    try:
+        goal_id = int(goal_id)
+    except:
+        response = {"message": f"Goal {goal_id} is invalid"}
+        abort(make_response(response, 400))
+    
+    query = db.select(Goal).where(Goal.id == goal_id)
+    goal = db.session.scalar(query)
+
+    if not goal:
+        response = {"message": f"Goal {goal_id} was not found"}
+        abort(make_response(response, 404))
+
+    return goal
