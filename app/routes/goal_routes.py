@@ -29,6 +29,17 @@ def get_one_goal(goal_id):
     return {"goal": goal.obj_to_dict()}, 200
 
 
+@bp.delete("/<goal_id>")
+def delete_one_goal(goal_id):
+    goal = validate_goal(goal_id)
+
+    db.session.delete(goal)
+    db.session.commit()
+    
+    response = {"details": f"Goal {goal.id} \"{goal.title}\" successfully deleted "}
+    return response, 200
+
+
 def validate_goal(goal_id):
     try:
         goal_id = int(goal_id)
