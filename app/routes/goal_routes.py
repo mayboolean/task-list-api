@@ -13,3 +13,12 @@ def create_goal():
     db.session.commit()
     response = {"goal": new_goal.obj_to_dict()}
     return response, 201
+
+@bp.get("")
+def get_all_goals():
+    query = db.select(Goal).order_by(Goal.id)
+    goals = db.session.scalars(query)
+
+    goals_response = [goal.obj_to_dict() for goal in goals]
+    return goals_response
+
