@@ -4,10 +4,10 @@ from ..db import db
 from datetime import datetime
 
 
-tasks_bp = Blueprint("tasks_bp", __name__, url_prefix="/tasks")
+bp = Blueprint("tasks_bp", __name__, url_prefix="/tasks")
 
 # make a POST request to /tasks with the following HTTP request body
-@tasks_bp.post("")
+@bp.post("")
 def create_task():
     request_body = request.get_json()
     new_task = Task.obj_from_dict(request_body)
@@ -20,7 +20,7 @@ def create_task():
     return response, 201
 
 # GET request to /tasks
-@tasks_bp.get("")
+@bp.get("")
 def get_all_task():
     query = db.select(Task)
     sort =  request.args.get("sort")
@@ -37,13 +37,13 @@ def get_all_task():
 
     return tasks_response
 
-@tasks_bp.get("/<task_id>")
+@bp.get("/<task_id>")
 def get_one_task(task_id):
     task = validate_task(task_id)
 
     return {"task": task.obj_to_dict()}
 
-@tasks_bp.put("/<task_id>")
+@bp.put("/<task_id>")
 def update_task(task_id):
     task = validate_task(task_id)
     request_body = request.get_json()
@@ -55,7 +55,7 @@ def update_task(task_id):
 
     return { "task": task.obj_to_dict()}
 
-@tasks_bp.patch("/<task_id>/<mark_as>")
+@bp.patch("/<task_id>/<mark_as>")
 def update_is_complete(task_id, mark_as):
     task = validate_task(task_id)
 
@@ -68,7 +68,7 @@ def update_is_complete(task_id, mark_as):
 
     return { "task": task.obj_to_dict()}
 
-@tasks_bp.delete("/<task_id>")
+@bp.delete("/<task_id>")
 def delete_task(task_id):
     task = validate_task(task_id)
     db.session.delete(task)
