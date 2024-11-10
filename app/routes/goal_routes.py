@@ -29,6 +29,19 @@ def get_one_goal(goal_id):
     return {"goal": goal.obj_to_dict()}, 200
 
 
+@bp.put("/<goal_id>")
+def update_one_goal(goal_id):
+    goal = validate_goal(goal_id)
+
+    request_body = request.get_json()
+    goal.title = request_body["title"]
+
+    db.session.commit()
+
+    response = {"goal": goal.obj_to_dict()}
+    return response, 200
+
+
 @bp.delete("/<goal_id>")
 def delete_one_goal(goal_id):
     goal = validate_goal(goal_id)

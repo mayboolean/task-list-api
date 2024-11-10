@@ -2,6 +2,8 @@ from flask import Blueprint, request, Response, abort, make_response
 from ..models.task import Task
 from ..db import db
 from datetime import datetime
+import requests
+import os
 
 
 bp = Blueprint("tasks_bp", __name__, url_prefix="/tasks")
@@ -55,18 +57,60 @@ def update_task(task_id):
 
     return { "task": task.obj_to_dict()}
 
-@bp.patch("/<task_id>/<mark_as>")
-def update_is_complete(task_id, mark_as):
+@bp.patch("/<task_id>/mark_complete")
+def update_complete(task_id):
     task = validate_task(task_id)
+    task.completed_at = datetime.utcnow()
 
-    if mark_as == "mark_complete":
-        task.completed_at = datetime.utcnow()
-    else:
-        task.completed_at = None
-    
     db.session.commit()
 
-    return { "task": task.obj_to_dict()}
+    path = "https://slack.com/api/chat.postMessage"
+    token = os.environ.get("SLACK_BOT_TOKEN")
+    channel_id = "C07V4J7ABF1"
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    data = {
+        "channel": channel_id, 
+        "text": f"Someone just completed the task {task.title}"
+    }
+
+    requests.post(path, headers=headers, json=data)
+  
+    response = {"task": task.obj_to_dict()}
+    return response, 200
+
+
+@bp.patch("/<task_id>/mark_incomplete")
+def update_incomplete(task_id):
+    task = validate_task(task_id)
+    task.completed_at = None
+
+    db.session.commit()
+
+    response = {"task": task.obj_to_dict()}
+    return response, 200
+
+
+
+
+
+
+
+
+    # channel_id = "C07V4J7ABF1"
+    # try:
+    #     result = client.chat_postMessage(
+    #         channel=channel_id, 
+    #         text=f"Someone just completed the task {task.title}"
+    #     )
+    #     logger.info(result)
+
+    # except SlackApiError as e:
+    #     logger.error(f"Error posting message: {e}")
+    
+    # return { "task": task.obj_to_dict()}
 
 @bp.delete("/<task_id>")
 def delete_task(task_id):
