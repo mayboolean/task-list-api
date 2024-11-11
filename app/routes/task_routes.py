@@ -92,26 +92,6 @@ def update_incomplete(task_id):
     response = {"task": task.obj_to_dict()}
     return response, 200
 
-
-
-
-
-
-
-
-    # channel_id = "C07V4J7ABF1"
-    # try:
-    #     result = client.chat_postMessage(
-    #         channel=channel_id, 
-    #         text=f"Someone just completed the task {task.title}"
-    #     )
-    #     logger.info(result)
-
-    # except SlackApiError as e:
-    #     logger.error(f"Error posting message: {e}")
-    
-    # return { "task": task.obj_to_dict()}
-
 @bp.delete("/<task_id>")
 def delete_task(task_id):
     task = validate_task(task_id)

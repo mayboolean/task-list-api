@@ -1,19 +1,25 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..db import db
 from datetime import datetime
 from typing import Optional
 from flask import make_response, abort
+from sqlalchemy import ForeignKey
 
 class Task(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     title: Mapped[str]
     description: Mapped[str]
-    completed_at: Mapped[Optional[datetime]] 
+    completed_at: Mapped[Optional[datetime]]
+    goal_id: Mapped[Optional[int]] = mapped_column(ForeignKey("goal.id")) 
+    goal: Mapped[Optional["Goal"]] = relationship(back_populates="tasks")
+
 
     # book object to dict representation
     def obj_to_dict(self):
         task_as_dict = {}
         task_as_dict["id"] = self.id
+        if self.goal:
+            task_as_dict["goal_id"] = self.goal.id
         task_as_dict["title"] = self.title
         task_as_dict["description"] = self.description
         task_as_dict["is_complete"] = True if self.completed_at is not None else False
@@ -34,6 +40,7 @@ class Task(db.Model):
             title=title,
             description=description,
             completed_at=task_data.get("completed_at", None)
+            
         )
 
         return new_task
