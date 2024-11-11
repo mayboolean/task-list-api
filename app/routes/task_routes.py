@@ -41,13 +41,13 @@ def get_all_task():
 
 @bp.get("/<task_id>")
 def get_one_task(task_id):
-    task = validate_task(task_id)
+    task = validate_model(Task, task_id)
 
     return {"task": task.obj_to_dict()}, 200
 
 @bp.put("/<task_id>")
 def update_task(task_id):
-    task = validate_task(task_id)
+    task = validate_model(Task, task_id)
     request_body = request.get_json()
 
     task.title = request_body["title"]
@@ -59,7 +59,7 @@ def update_task(task_id):
 
 @bp.patch("/<task_id>/mark_complete")
 def update_complete(task_id):
-    task = validate_task(task_id)
+    task = validate_model(Task, task_id)
     task.completed_at = datetime.utcnow()
 
     db.session.commit()
@@ -84,7 +84,7 @@ def update_complete(task_id):
 
 @bp.patch("/<task_id>/mark_incomplete")
 def update_incomplete(task_id):
-    task = validate_task(task_id)
+    task = validate_model(Task, task_id)
     task.completed_at = None
 
     db.session.commit()
@@ -94,13 +94,13 @@ def update_incomplete(task_id):
 
 @bp.delete("/<task_id>")
 def delete_task(task_id):
-    task = validate_task(task_id)
+    task = validate_model(Task, task_id)
     db.session.delete(task)
     db.session.commit()
 
     return {"details": f"Task {task_id} \"{task.title}\" successfully deleted"}
 
-def validate_task(task_id):
+def validate_model(Task, task_id):
     try:
         task_id = int(task_id)
     except:

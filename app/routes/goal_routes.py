@@ -1,7 +1,8 @@
 from flask import Blueprint, Response, request, abort, make_response
 from ..models.goal import Goal
 from ..db import db
-from ..models.task import Task 
+from ..models.task import Task
+from .route_utilities import validate_model
 
 bp = Blueprint("goals_bp", __name__, url_prefix="/goals")
 
@@ -17,7 +18,7 @@ def create_goal():
 
 @bp.post("/<goal_id>/tasks")
 def add_tasks_to_goals(goal_id):
-    goal = validate_goal(goal_id)
+    goal = validate_model(Goal, goal_id)
     request_body = request.get_json()
     task_ids = request_body["task_ids"]
     tasks = Task.query.filter(Task.id.in_(task_ids)).all()
@@ -42,14 +43,14 @@ def get_all_goals():
 
 @bp.get("/<goal_id>")
 def get_one_goal(goal_id):
-    goal = validate_goal(goal_id)
+    goal = validate_model(Goal, goal_id)
 
     return {"goal": goal.obj_to_dict()}, 200
 
 # get all tasks of a certain goal
 @bp.get("/<goal_id>/tasks")
 def get_all_tasks_of_goal(goal_id):
-    goal = validate_goal(goal_id)
+    goal = validate_model(Goal, goal_id)
 
     tasks_list = [task.obj_to_dict() for task in goal.tasks]
     print(tasks_list)
@@ -64,7 +65,7 @@ def get_all_tasks_of_goal(goal_id):
 
 @bp.put("/<goal_id>")
 def update_one_goal(goal_id):
-    goal = validate_goal(goal_id)
+    goal = validate_model(Goal, goal_id)
 
     request_body = request.get_json()
     goal.title = request_body["title"]
@@ -77,7 +78,7 @@ def update_one_goal(goal_id):
 
 @bp.delete("/<goal_id>")
 def delete_one_goal(goal_id):
-    goal = validate_goal(goal_id)
+    goal = validate_model(Goal, goal_id)
 
     db.session.delete(goal)
     db.session.commit()
@@ -86,19 +87,3 @@ def delete_one_goal(goal_id):
     return response, 200
 
 
-
-def validate_goal(goal_id):
-    try:
-        goal_id = int(goal_id)
-    except:
-        response = {"message": f"Goal {goal_id} is invalid"}
-        abort(make_response(response, 400))
-    
-    query = db.select(Goal).where(Goal.id == goal_id)
-    goal = db.session.scalar(query)
-
-    if not goal:
-        response = {"message": f"Goal {goal_id} was not found"}
-        abort(make_response(response, 404))
-
-    return goal
